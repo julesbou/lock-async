@@ -1,4 +1,4 @@
-## Lock
+## Lock [![Build Status](https://travis-ci.org/julesbou/simple-lock.svg?branch=master)](https://travis-ci.org/julesbou/simple-lock)
 
 Locking mechanism for async functions
 
