@@ -14,8 +14,9 @@ app.put('/:id', function(req, res) {
   })
 })
 ```
+_(note: we could use mongodb `$inc` operator, but that's not the point)_
 
-If two user call simultaneously this action with the same ID only one of both writes would be executed.
+If two users call simultaneously this action (with the same ID), only one of both writes would be executed.
 
 By using `lock()` it's easy to fix our problem:
 
