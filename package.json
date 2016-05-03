@@ -1,5 +1,5 @@
 {
-  "name": "simple-lock",
+  "name": "lock-async",
   "version": "0.0.1",
   "description": "simple and easy locking mechanism",
   "main": "lock.js",
