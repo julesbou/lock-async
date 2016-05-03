@@ -14,8 +14,11 @@ module.exports = function lock(namespace, callback) {
     if (queue.has(namespace) && queue.get(namespace).length) {
       queue.get(namespace)[0](next)
       queue.set(namespace, queue.get(namespace).slice(1))
-    } else {
-      pending.set(namespace, false)
+    }
+    // end of queue
+    else {
+      queue.delete(namespace)
+      pending.delete(namespace)
     }
   }
 

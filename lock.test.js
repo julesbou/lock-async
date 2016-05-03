@@ -21,14 +21,13 @@ describe('lock', function() {
     map = []
   })
 
-  it('sync', function(done) {
+  it('sync', function() {
     lock(next => map.push(1) && next())
     lock(next => map.push(2) && next())
     lock(next => map.push(3) && next())
     lock(next => map.push(4) && next())
 
     assert.deepEqual(map, [1, 2, 3, 4])
-    done()
   })
 
   it('async', function(done) {
