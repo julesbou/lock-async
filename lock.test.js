@@ -6,8 +6,22 @@ const lock = require('./lock.js')
 
 describe('lock', function() {
 
+  function asyncPush(val, timeout) {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        map.push(val)
+        resolve()
+      }, timeout)
+    })
+  }
+
+  let map
+
+  beforeEach(function() {
+    map = []
+  })
+
   it('sync', function(done) {
-    const map = []
     lock(next => map.push(1) && next())
     lock(next => map.push(2) && next())
     lock(next => map.push(3) && next())
@@ -18,16 +32,6 @@ describe('lock', function() {
   })
 
   it('async', function(done) {
-    const map = []
-    const asyncPush = (val, timeout) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          map.push(val)
-          resolve()
-        }, timeout)
-      })
-    }
-
     lock(next => asyncPush(1, 10).then(next))
     lock(next => asyncPush(2, 5).then(next))
     lock(next => asyncPush(3, 20).then(next))
@@ -40,16 +44,6 @@ describe('lock', function() {
   })
 
   it('parallel', function(done) {
-    const map = []
-    const asyncPush = (val, timeout) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          map.push(val)
-          resolve()
-        }, timeout)
-      })
-    }
-
     async.parallel([
       () => lock(next => asyncPush(1, 10).then(next)),
       () => lock(next => asyncPush(2, 5).then(next)),
@@ -64,16 +58,6 @@ describe('lock', function() {
   })
 
   it('namespace', function(done) {
-    const map = []
-    const asyncPush = (val, timeout) => {
-      return new Promise((resolve, reject) => {
-        setTimeout(() => {
-          map.push(val)
-          resolve()
-        }, timeout)
-      })
-    }
-
     lock('ns1', next => asyncPush(1, 10).then(next))
     lock('ns2', next => asyncPush(2, 5).then(next))
     lock('ns2', next => asyncPush(3, 20).then(next))
