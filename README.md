@@ -6,6 +6,8 @@ Locking mechanism for async functions
 npm install lock-async
 ```
 
+This library allows you to wait for an async function call to complete before calling it again.
+
 ### Use case
 
 In mongodb you can't execute two concurrent writes:
