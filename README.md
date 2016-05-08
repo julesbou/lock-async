@@ -2,6 +2,10 @@
 
 Locking mechanism for async functions
 
+```
+npm install lock-async
+```
+
 ### Use case
 
 In mongodb you can't execute two concurrent writes:
@@ -21,6 +25,8 @@ If two users call simultaneously this action (with the same ID), only one of bot
 By using `lock()` it's easy to fix our problem:
 
 ```js
+var lock = require('lock-async')
+
 app.put('/:id', function(req, res) {
   lock(req.params.id, function(next) {
     var coll = db.collection('mycoll')
