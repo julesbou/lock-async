@@ -6,74 +6,81 @@ Locking mechanism for async functions
 npm install lock-async
 ```
 
-This library allows you to wait for an async function call to complete before calling it again.
-
 ### Use case
 
-In mongodb you can't execute two concurrent writes:
+Let's consider following API, you can call `/increment/1234` to increment a number stored in the database:
 
 ```js
-app.put('/:id', function(req, res) {
+express.put('/increment/:userId', function(req, res) {
   var coll = db.collection('mycoll')
   coll.findOne({ _id: req.params.id }, (err, doc) => {
+
+    // increment `count` one time
     coll.update({ _id: req.params.id }, { count: ++doc.count })
   })
 })
 ```
-_(note: we could use mongodb `$inc` operator, but that's not the point)_
 
-If two users call simultaneously this action (with the same ID), only one of both writes would be executed.
+If `/increment/1234` is called two times **simultaneously**, `count` will be incremented only once (instead of twice).
+This is because mongodb doesn't wait for one update to finish before starting another one.
 
 By using `lock()` it's easy to fix our problem:
 
 ```js
 var lock = require('lock-async')
 
-app.put('/:id', function(req, res) {
+express.put('/increment/:id', function(req, res) {
+
+  // calling `lock()` will wait for `next()` callback to
+  // be called before starting any consecutive call
   lock(req.params.id, function(next) {
     var coll = db.collection('mycoll')
     coll.findOne({ _id: req.params.id }, (err, doc) => {
+
+      // increment `count` one time,
+      // and call `next()` when the update is finished
       coll.update({ _id: req.params.id }, { count: ++doc.count }, next)
     })
   })
 })
 ```
 
+Now, if `/increment/2` is called two times again, the number will be incremented twice.
 
 ### Usage
 
-Basic example:
+By just using `lock(fn)`:
 
 ```js
+// call `lock()` for the first time
 lock(next => {
+  // wait one second
   setTimeout(() => {
     console.log(1)
     next()
   }, 1000)
 })
 
+// `lock()` has already been called,
+// so we wait 1sec for the first lock to finish
 lock(next => {
   console.log(2)
   next()
 })
 
+// Output:
 // 1
 // 2
 ```
 
-You can isolate locks, by using namespaces:
+Or defining a namespace using `lock(namespace, fn)`:
 
 ```js
 lock('lock1', next => {
   setTimeout(() => {
-    console.log(1)
+    console.log(2)
     next()
   }, 1000)
-})
-
-lock('lock2', next => {
-  console.log(2)
-  next()
 })
 
 lock('lock1', next => {
@@ -81,7 +88,13 @@ lock('lock1', next => {
   next()
 })
 
-// 2
+lock('lock2', next => {
+  console.log(1)
+  next()
+})
+
+// Output:
 // 1
+// 2
 // 3
 ```
